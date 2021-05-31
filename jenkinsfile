@@ -1,0 +1,40 @@
+def django_pipelines = fileLoader.fromGit('django_pipelines', 'https://github.com/adamkeinan/Django-Pipline.git', 'master', null, '')
+
+def post_exec_handler = { project_zip, docker_image ->
+  figlet 'Installing'
+  echo 'Running post scripts'
+  echo docker_image
+  sh "mkdir project_final && unzip ${project_zip} -d project_final"
+  sh 'ls -lh project_final/'
+}
+
+django_pipelines.buildProject(
+  project_name: 'django_template',  //The name of project (an artifact and a Docker image will be generated with this name)
+  python_django_main_module: 'djproject',  //The name of the main module of your project (where is located the settings file)
+  python_version: '3.7',  //The version of python that is going to be used
+ 
+  master_as_release_branch: true,  // Treat the master branch of your project as a release branch, otherwise only use the branches named by "release/.*" as a release branches (A release branch will do the end tasks [like publishing or execute your post_exec_handler])
+
+  node_yarn_install_static: true, // If true, it will run a yarn install after django run the collectstatic on the static folder;
+  project_docker_inject: true,  // If true, it will inject a default Dockerfile with default configuration files for your project that includes simple nginx error pages, a configuration for using supervisor, nginx and gunicorn on a same container;
+  project_docker_create_image: true,  //Mark this as true and the pipeline will try to deploy your project;
+
+  // Specific configurations for using mysql sidecar; On every build we going to raise an ephemeral mysql instance attached to the current django pipeline in order to serve your project. At the end the instance will be destroyed.
+  mysql_sidecar: [
+    root_password: '302010',
+    host_name: 'DB',
+    database_name: 'djproject',
+    version: '5.7'
+  ],
+
+  project_environment_variables: [
+    'DJANGO_ENVIRONMENT=dev',
+    'DB_HOST=DB',
+    'DB_NAME=djproject',
+    'DB_NAME_TEST=djproject_test',
+    'DB_PASSWORD=302010'
+  ],
+
+  // This is a closure that will exec post_exec_handler, declared above; It will inject both the artifact name and the docker_image, if provided on project_docker_create_image setting.
+  post_exec: post_exec_handler 
+)
