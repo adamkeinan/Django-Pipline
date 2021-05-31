@@ -1,5 +1,4 @@
-FROM python:%python_version%
-MAINTAINER Adam Keinan<adamkeinan1@gmail.com>
+FROM python:3
 
 RUN apt-get update && apt-get install nginx supervisor python-pip -y && \
     pip install --upgrade pip gunicorn pipenv && pip2 install --upgrade supervisor supervisor-stdout && apt-get autoclean

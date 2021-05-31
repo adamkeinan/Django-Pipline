@@ -158,10 +158,10 @@ def buildProjectPipeline(args) {
           cleanWs()
           unstash 'django_project'
           
-          sh 'wget https://github.com/joepreludian/django-jenkins-pipelines/archive/master.zip -O pipeline_temp.zip'
+          sh 'wget https://github.com/adamkeinan/Django-Pipline/master.zip -O pipeline_temp.zip'
           sh 'unzip pipeline_temp.zip -d .'
 
-          sh "mkdir dist; cd dist; unzip ../project.zip -d .; cp -Rv ../django-jenkins-pipelines-master/django_jenkins_pipeline/* ."
+          sh "mkdir dist; cd dist; unzip ../project.zip -d .; cp -Rv ../Django-Pipline-master/Django-Pipline/* ."
           
           sh "cd dist; cat supervisord.conf"
           sh "cd dist; sed -i \'s/%python_version%/${args.python_version}/g\' Dockerfile"
